@@ -1,0 +1,59 @@
+Description: >
+  A template to spin up an EC2 instance.
+
+Parameters:
+  InstanceType:
+    Description: The type and size of the instance.
+    Type: String
+    AllowedValues:
+    - t2.nano
+    - t2.micro
+    - t2.small
+    Default: t2.micro
+
+  InstanceKey:
+    Description: EC2User Key
+    Type: String
+    Default: pchpsky-week0-instance
+
+  ImageId:
+    Description: The AMI to be used.
+    Type: String
+    Default: ami-03d5c68bab01f3496
+
+Resources:
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable HTTP and SSH access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName:
+        Ref: InstanceKey
+      InstanceType:
+        Ref: InstanceType
+      ImageId:
+        Ref: ImageId
+      SecurityGroupIds:
+        - Ref: SecurityGroup
+
+Outputs:
+  PublicIP:
+    Description: Public IP address of the newly created EC2 instance
+    Value: !GetAtt Instance.PublicIp
+  InstanceId:
+    Description: InstanceId of the newly created EC2 instance
+    Value: { Ref: Instance }
+  PrivateIP:
+    Description: Private IP address of the newly created EC2 instance
+    Value: !GetAtt Instance.PrivateIp
