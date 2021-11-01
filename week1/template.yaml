@@ -1,0 +1,65 @@
+Description: >
+  A template to spin up an ASG.
+
+Parameters:
+  InstanceType:
+    Description: The type and size of the instance.
+    Type: String
+    AllowedValues:
+    - t2.nano
+    - t2.micro
+    - t2.small
+    Default: t2.micro
+
+  InstanceKey:
+    Description: EC2User Key
+    Type: String
+    Default: pchpsky-week1
+
+  ImageId:
+    Description: The AMI to be used.
+    Type: String
+    Default: ami-013a129d325529d4d
+
+Resources:
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable HTTP and SSH access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+
+  InstanceGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones:
+        Fn::GetAZs: ""
+      LaunchConfigurationName:
+        Ref: LaunchConfig
+      MinSize: '2'
+      MaxSize: '3'
+      DesiredCapacity: '2'
+
+  LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      KeyName:
+        Ref: InstanceKey
+      InstanceType:
+        Ref: InstanceType
+      ImageId:
+        Ref: ImageId
+      SecurityGroups:
+        - Ref: SecurityGroup
+      UserData:
+        !Base64 |
+        #!/bin/bash
+        yum -y update
+        yum -y install java-1.8.0-openjdk
